@@ -1,0 +1,44 @@
+name: Node.js CI/CD Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  # JOB 1: The Quality Gate
+  # If this fails, the Build job will NEVER run.
+  quality-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use modern Node
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test # Runs 'node --test'
+
+  # JOB 2: The Delivery
+  # Only runs if 'quality-check' passes
+  build-and-pack:
+    needs: quality-check # Dependency: Wait for tests to pass!
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Project
+        run: npm run build # Creates the 'dist' folder
+
+      - name: Pack Artifact (Zip it)
+        run: zip -r release.zip dist/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: grade-app-build
+          path: release.zip

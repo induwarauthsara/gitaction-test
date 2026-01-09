@@ -1,0 +1,10 @@
+{
+  "name": "grade-calculator",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test", 
+    "build": "mkdir dist && cp src/index.js dist/app.js"
+  },
+  "devDependencies": {}
+}
