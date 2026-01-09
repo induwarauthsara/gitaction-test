@@ -1,0 +1,40 @@
+name: Deploy to GitHub Releases
+
+on:
+  push:
+    tags:
+      - 'v*' # This triggers ONLY when you tag a version (e.g., v1.0, v2.3.4)
+
+permissions:
+  contents: write # REQUIRED: Allows the robot to create releases in your repo
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install & Test
+        run: |
+          npm install
+          npm test
+
+      - name: Build & Zip
+        run: |
+          npm run build
+          # Create a zip file named after the version tag (e.g., my-app-v1.0.zip)
+          zip -r my-app-${{ github.ref_name }}.zip dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # We upload the zip file we just made
+          files: my-app-${{ github.ref_name }}.zip
+          # It automatically generates release notes based on your changes
+          generate_release_notes: true
