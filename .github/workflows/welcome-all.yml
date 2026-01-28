@@ -1,0 +1,43 @@
+name: Welcome Bot (Issues + PRs)
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Welcome new contributors
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let message = '';
+            
+            // Check if it's an issue or PR
+            if (context.eventName === 'issues') {
+              message = '👋 Hey @' + context.payload.issue.user.login + '! Thanks for opening this issue. Our team will review it shortly. Have a great day! 🚀';
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+            } else if (context.eventName === 'pull_request') {
+              message = '🎉 Thank you for your contribution, @' + context.payload.pull_request.user.login + '! We appreciate you taking the time to submit this pull request. Our team will review it soon. 💪';
+              
+              await github.rest.pulls.createReview({
+                pull_number: context.payload.pull_request.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message,
+                event: 'COMMENT'
+              });
+            }
